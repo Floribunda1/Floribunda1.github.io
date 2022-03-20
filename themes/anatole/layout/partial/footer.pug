@@ -1,3 +1,12 @@
 .footer
-  .by_farbox
-    a(href="https://hexo.io/zh-cn/", target="_blank") POWERED BY HEXO
+  if theme.sidebar.footer_text
+    .by_farbox
+      p= theme.sidebar.footer_text
+  else
+    a(target="_blank" href="/")
+      span Theme by 
+    a(href="https://www.caicai.me")  CaiCai 
+    span &
+    a(href="https://github.com/Ben02/hexo-theme-Anatole")  Ben
+    .by_farbox
+      a(href="https://hexo.io/zh-cn/" target="_blank") Proudly published with Hexo&#65281;
