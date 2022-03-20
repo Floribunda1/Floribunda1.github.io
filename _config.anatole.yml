@@ -3,6 +3,7 @@ keywords: FrontEnd, Software Developer
 author: Author Name,name@example.com
 description: 今天工作的怎么样
 avatar: /images/avatar.jpg
+favicon: /images/fa-icon.png
 
 # Sidebar
 sidebar:
