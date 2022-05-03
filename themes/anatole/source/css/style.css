@@ -12,6 +12,19 @@ body {
   margin: 0 auto 30px auto;
   background-color: #fff;
 }
+body::-webkit-scrollbar {
+  width: 6px;
+}
+body::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+body::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 88, 88, 0.2);
+}
 
 p {
   line-height: 1.9em;
@@ -113,12 +126,12 @@ a:active {
 .content {
   height: auto;
   float: right;
-  width: 60%;
+  width: 70%;
   margin-top: 60px;
 }
 
 .page-top {
-  width: 60%;
+  width: 70%;
   position: fixed;
   right: 0;
   z-index: 3;
@@ -172,7 +185,7 @@ a:active {
 }
 
 .sidebar {
-  width: 40%;
+  width: 30%;
   -webkit-background-size: cover;
   background-size: cover;
   background-color: #fff;
