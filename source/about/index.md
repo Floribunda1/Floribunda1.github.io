@@ -16,7 +16,6 @@ introduction:
     - 喜欢打游戏
     - 好奇心旺盛
     - 社恐患者
-    - DRYer
 
 skills:
   - css/sass/less
@@ -38,7 +37,6 @@ working_experience:
     tags:
       - bi 产品前端开发
       - 地理可视化
-      - 状态管理
 
   company: 同花顺(2020.7-2021.2)
     tags:

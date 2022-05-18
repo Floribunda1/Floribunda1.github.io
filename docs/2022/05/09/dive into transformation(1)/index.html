@@ -1,0 +1,1387 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/images/favicon.png">
+  <link rel="icon" href="/images/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="acnoo">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言 最近在做的一个项目，其中需要缩放、平移画布的功能，和我们经常使用的 Excalidraw 和 draw.io 的画布平移功能类似，如下图所示：  由于我使用的是 svg 去做渲染，很容易想到用 transform 去实现画布的平移缩放 我们在平时的常规 UI 开发中也会有需要使用 transform 功能的场景，但是大多都是简单的变换位置，比如使用 rotation 去做动画，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dive into Transformation（一）">
+<meta property="og:url" content="https://floribunda1.github.io/2022/05/09/dive%20into%20transformation(1)/index.html">
+<meta property="og:site_name" content="acnoo">
+<meta property="og:description" content="前言 最近在做的一个项目，其中需要缩放、平移画布的功能，和我们经常使用的 Excalidraw 和 draw.io 的画布平移功能类似，如下图所示：  由于我使用的是 svg 去做渲染，很容易想到用 transform 去实现画布的平移缩放 我们在平时的常规 UI 开发中也会有需要使用 transform 功能的场景，但是大多都是简单的变换位置，比如使用 rotation 去做动画，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-09T13:22:14.981Z">
+<meta property="article:modified_time" content="2022-05-18T15:40:31.384Z">
+<meta property="article:author" content="acnoo">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="图形学">
+<meta property="article:tag" content="前端">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  <title>Dive into Transformation（一） - acnoo</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"floribunda1.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":true,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="acnoo" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>ACNOO</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/banners/mountain.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Dive into Transformation（一）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-09 21:22" pubdate>
+          2022年5月9日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          9.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          80 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Dive into Transformation（一）</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="前言">前言</h2>
+<p>最近在做的一个项目，其中需要缩放、平移画布的功能，和我们经常使用的 <a
+target="_blank" rel="noopener" href="https://excalidraw.com/">Excalidraw</a> 和 <a
+target="_blank" rel="noopener" href="https://app.diagrams.net/">draw.io</a>
+的画布平移功能类似，如下图所示：</p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/ezgif.com-gif-maker.gif" srcset="/img/loading.gif" lazyload /></p>
+<p>由于我使用的是 svg 去做渲染，很容易想到用 transform
+去实现画布的平移缩放</p>
+<p>我们在平时的常规 UI 开发中也会有需要使用 transform
+功能的场景，但是大多都是简单的变换位置，比如使用 rotation 去做动画，或者
+translation 去调整元素的位置，稍微高级一些的可能会用到 skew, rotation,
+translation 的组合来做一些更酷炫的 css3 动画</p>
+<p>本以为这是个比较简单的功能，但是稍微了解了一下以后发现里面的水比我想象的深，其中困扰我的有但不仅仅限于以下几个问题：</p>
+<ul>
+<li>transform 的顺序有关系吗?，比如先 scale 再 skew，或先 translate 再
+scale</li>
+<li>transform 的 matrix 属性是什么意思？</li>
+<li>如何以鼠标的位置为 transform-origin 对画布进行平移缩放？</li>
+<li>如何将鼠标的位置根据画布的 transform
+转换到画布上的点？比如画布缩放、平移以后在画布上绘制圆和矩形，如何正确的对应到画布的点上？</li>
+</ul>
+<p>这些问题困扰着我，让我感觉它仿佛并不简单，在网上查阅一些资料以后，发现这些问题对应着图形学中的
+<strong>坐标变换</strong>
+相关知识，想要深入了解和理解这些又不得不接触线性代数，一个接着一个的坑
+🥲</p>
+<p>本文更多的是自己对于这部分知识的整理和输出，并不一定都是对的，如有错误欢迎指出</p>
+<h2 id="从一些基础的线性代数概念开始">从一些基础的线性代数概念开始</h2>
+<blockquote>
+<p>[!note] 以下标 * 的标题表示拓展</p>
+</blockquote>
+<p>对于线性代数和矩阵变换我了解的并不太多，很多稍微高级一点的概念因为现阶段用不到只是蜻蜓点水的过了一遍，比如行列式(determinant)
+和
+特征值/特征向量(eigenvalues/eigenvectors)等，更多的还是聚焦于向量的表示/变换和矩阵的复合等</p>
+<p>这里推荐 3blue1brown 的 <a
+target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">Essence
+of linear algebra -
+YouTube</a>，讲的很通俗易懂，我自己的大部分对于线代的理解也来源于这个系列，有条件的同学强烈建议去看一看该教程（线代大佬可以无视
+🤣）</p>
+<blockquote>
+<p>注：不要偷懒，一定要看看线性代数相关教程</p>
+</blockquote>
+<h3 id="向量">向量</h3>
+<p>在一些其他编程语言，如 C++ 中，就有一种数据类型为
+vector，它表示为一个可以动态扩容的数组，而数组的特点就是
+<strong>有向的列表</strong>。我们在这里要说的向量和
+<strong>有向的列表</strong> 有一定的关联，但又不完全一样</p>
+<p>我们可以理解为向量就是
+<em>空间中的有向箭头</em>，一个向量由其长度和方向决定，和它在空间中的位置无关，只要两个向长度和方向相同，我们就可以认为它们是同一个向量</p>
+<p>例如下图中的 <span class="math inline">\(\vec{AE}\)</span> 和 <span
+class="math inline">\(\vec{CD}\)</span> 就是同一个向量</p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/20220509163910.png" srcset="/img/loading.gif" lazyload /></p>
+<p>因此，我们可以认为所有的向量的起点都是原点，也方便我们去研究和理解问题</p>
+<h4 id="向量的运算">向量的运算</h4>
+<h6 id="向量乘以常量">向量乘以常量</h6>
+<p>一个向量 <span class="math inline">\(\vec{u}\)</span> 乘以一个常量
+<span class="math inline">\(\lambda\)</span></p>
+<ul>
+<li>如果 <span class="math inline">\(\lambda &gt; 0\)</span>,
+那么结果向量 <span class="math inline">\(\vec{v}\)</span> 的方向和向量
+<span class="math inline">\(\hat{u}\)</span>
+的方向相同，不过长度变为原来的 <span
+class="math inline">\(\lambda\)</span> 倍</li>
+<li>如果 <span class="math inline">\(\lambda &lt;
+0\)</span>，那么结果向量 <span class="math inline">\(\vec{v}\)</span>
+的方向和向量 <span class="math inline">\(\hat{u}\)</span>
+的方向相反，长度变为原来的 <span
+class="math inline">\(|\lambda|\)</span> 倍</li>
+<li>如果 <span class="math inline">\(\lambda = 0\)</span>，那么结果就是
+<span class="math inline">\(\vec{0}\)</span></li>
+</ul>
+<h6 id="向量加减运算">向量加减运算</h6>
+<p>向量的加法可以用两种方式去理解，例如下面的 <span
+class="math inline">\(\vec{AB} + \vec{AC}\)</span></p>
+<p>第一就是平行四边形，即结果等于以 AB AC 为边所组成的平行四边形的对角线
+<span class="math inline">\(\vec{AD}\)</span></p>
+<p>第二就是将一个向量的尾部平移至另一个向量的头部，然后连接第一个向量的尾部和第二个向量的头部，就是两个向量的加和，即
+<span class="math inline">\(\vec{AD}\)</span></p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/20220509201101.png" srcset="/img/loading.gif" lazyload /></p>
+<p>这种运算也有其物理意义，我们可以认为向量代表着空间上的位移，两个向量相加所得到的向量就是实际位移的长度</p>
+<p>向量的减法也比较简单，例如 <span class="math inline">\(\vec{AB} -
+\vec{AC}\)</span>，我们可以理解为 <span class="math inline">\(\vec{AB} +
+(- \vec{AC})\)</span></p>
+<p>关于向量的点乘和叉乘这里就不过多描述，后面会提到</p>
+<h4 id="向量的线性组合基向量">向量的线性组合，基向量</h4>
+<p>在上面也提到，<span class="math inline">\(\vec{AD} = \vec{AB} +
+\vec{AC}\)</span>，即该向量可以由 <strong>线性不相关(linearly
+independent)</strong> 的 <span class="math inline">\(\vec{AB}\)</span>
+和 <span class="math inline">\(\vec{AC}\)</span>
+组合而成，这种一个向量由两个或多个向量的组合表示的现象，被称为
+<strong>线性组合(linear
+combination)</strong>，用数学公式表达的话，即</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{u} = \alpha \vec{v} + \beta \vec{w}, \space \space \alpha, \beta
+\in R
+\end{align}
+\]</span></p>
+<blockquote>
+<p>注：
+一组向量线性不相关表示该组向量中的任何一个向量都不能由该组中的其他的向量组合表示</p>
+</blockquote>
+<p>既然向量可以通过线性组合的方式来表示，那我们不妨建立一个二维坐标系，在空间中我们定义两个向量，然后在这个二维坐标系中的任何向量都可以用这两个向量线性组合表示：</p>
+<p><span class="math display">\[
+\begin{align}
+\hat{i} = \begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\\
+\hat{j} = \begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>其中 <span class="math inline">\(\hat{i}\)</span> 表示起点在
+(0,0)，终点在 (1, 0) 的向量，<span
+class="math inline">\(\hat{j}\)</span> 表示起点在 (0,0)，终点在 (0, 1)
+的向量，这两个向量我们称其为 <strong>基向量(basis vector)</strong></p>
+<p>例如下图中的几个向量，我们都可以用这两个基向量的组合来表示</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{AB} &amp;= 2\vec{i} + 2\vec{j}
+\\
+\vec{AE} &amp;= \vec{i} - \vec{j}
+\\
+\vec{CD} &amp;= 2\vec{i} - 2\vec{j}
+\end{align}
+\]</span></p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/20220509163910.png" srcset="/img/loading.gif" lazyload /></p>
+<p>由 <span class="math inline">\(\{\vec{i},\space\space
+\vec{j}\}\)</span>
+这两个向量线性组合所得到的所有的向量（即整个平面）的空间被称为这一组向量所张成的<strong>空间(span)</strong></p>
+<p>既然我们已经约定俗成了这两个基向量，那么向量的表示就可以不用那么繁琐，直接省略
+<span class="math inline">\(\hat{i}\)</span> 和 <span
+class="math inline">\(\hat{j}\)</span> 了，即</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{AB} &amp;= \begin{bmatrix}
+2 \\
+2
+\end{bmatrix}
+\\
+\vec{AE} &amp;= \begin{bmatrix}
+1 \\
+-1
+\end{bmatrix}
+\\
+\vec{CD} &amp;= \begin{bmatrix}
+2 \\
+-2
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<h3 id="线性变换">线性变换</h3>
+<p>wiki 对于线性变换的定义如下：</p>
+<blockquote>
+<p>a <strong>linear map</strong> (also called a <strong>linear
+mapping</strong>, <strong>linear transformation</strong>, <strong>vector
+space homomorphism</strong>, or in some contexts <strong>linear
+function</strong>) is a <a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Map_(mathematics)"
+title="Map (mathematics)">mapping</a> between <span
+class="math inline">\(V \rightarrow W\)</span>  between two <a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vector_space">vector spaces</a> that
+preserves the operations of <a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vector_addition"
+title="Vector addition">vector addition</a> and <a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Scalar_multiplication"
+title="Scalar multiplication">scalar multiplication</a>.</p>
+</blockquote>
+<p>翻译过来，线性变换就是从向量空间 <span
+class="math inline">\(V\)</span> 到向量空间 <span
+class="math inline">\(W\)</span>
+的映射函数，同时保留向量的加法和标量乘法，这里有几个关键字：</p>
+<ol type="1">
+<li><strong>向量空间</strong> 即包含一组向量的集合，例如下面的向量空间
+<span
+class="math inline">\(V\)</span>，就表示一个三维空间的所有向量</li>
+</ol>
+<p><span class="math display">\[
+\begin{align}
+V &amp;= \{v_1, ..., v_n\} \\
+v &amp;= \{x,\space y,\space z\}, \space \space x,y,z \in R
+\end{align}
+\]</span></p>
+<ol start="2" type="1">
+<li><strong>映射函数</strong>，
+这表示线性变换的本质就是一个函数，和我们在编程中的函数一样，都是接受一个
+input，返回一个 output，这里的 input 和 output
+都是向量空间中的成员，即向量</li>
+</ol>
+<p>到这里，我们可以暂时的将线性变换理解为：<font color='tomato'>线性变换是一个函数，它的输入是一个向量，输出也是一个向量</font></p>
+<p>但是判断一个变换是否为线性变换，也需要满足两个条件：</p>
+<ol type="1">
+<li>所有的直线变换后必须还是直线，不能被弯曲</li>
+<li>原点必须保持在原位</li>
+</ol>
+<p>从上面两点我们也可以得出一个结论：变换后的网格仍然保持平行等距的特性</p>
+<p>例如下面这张图中，就是我们常见的缩放的线性变换，向量 <span
+class="math inline">\(\vec{v}\)</span> 从 <span
+class="math inline">\([50, 150]\)</span> 变换到 <span
+class="math inline">\([100, 300]\)</span> 的位置</p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/Animation.gif" srcset="/img/loading.gif" lazyload /></p>
+<p>那么有一个问题，<strong>我们该如何表示线性变换函数？</strong></p>
+<p>我们在上面提到一个向量可以由一组线性不相关的基向量线性组合得到，同时也约定俗成了笛卡尔坐标系下的基向量</p>
+<p><span class="math display">\[
+\begin{align}
+\hat{i} =
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\\
+\hat{j} =
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>而且我们从线性变换中推导出来的结论 -- 即 <strong>网格线</strong>
+仍保持平行等距，我们可以得出另一个结论，即
+<strong>变换后的向量线性组合不发生变化</strong>，例如：</p>
+<p><span class="math display">\[
+\vec{v} = 3\vec{i} + 2\vec{j}
+\]</span></p>
+<p>那么在经过线性变换以后，我们可以得到</p>
+<p><span class="math display">\[
+\vec{v&#39;} = 3 \vec{i&#39;} + 2\vec{j&#39;}
+\]</span></p>
+<blockquote>
+<p>[!IMPORTANT]
+我们可以用经过线性变换后的基向量来表示一次线性变换，然后所有的向量都可以由这一组向量线性组合得到</p>
+</blockquote>
+<p>例如我们在上图中的 gif 图中，可以看出是将所有的向量执行了 scale
+操作，其基向量变换后的值为</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{i} =
+\begin{bmatrix}
+2 \\
+0
+\end{bmatrix}
+\\
+\vec{j} =
+\begin{bmatrix}
+0 \\
+2
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>我们可以再稍微简化一下，将这次线性变换表示为</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\]</span></p>
+<p>左边一列为 <span class="math inline">\(\hat{i}\)</span> ，右边为
+<span
+class="math inline">\(\vec{j}\)</span>，学过线性代数的童鞋可能一眼就发现了，这不就是矩阵吗？没错，但是更妙的还在后面，我们还可以套上矩阵的乘法来表示向量变换后的结果以及复合线性变换，例如对于下面的向量</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{v} = \begin{bmatrix}
+3 \\
+2
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>我们对其进行如上的线性变换，可以得到变换后的结果为</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{v&#39;} &amp;= f(\vec{v})
+\\\\
+&amp;= \begin{bmatrix}
+\vec{i&#39;} &amp;&amp; \vec{j&#39;} \\
+\end{bmatrix}
+\begin{bmatrix}
+3 \\
+2
+\end{bmatrix}
+\\\\
+&amp;= \begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+3 \\
+2
+\end{bmatrix}
+\\\\
+&amp;=
+3 \cdot
+\begin{bmatrix}
+2 \\
+0
+\end{bmatrix}
++
+2 \cdot
+\begin{bmatrix}
+0 \\
+2
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+3 \cdot 2 + 2 \cdot 0 \\
+3 \cdot 0 + 2 \cdot 2
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+6 \\
+4
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>那么到这里我们就明白了以下几点：</p>
+<ol type="1">
+<li>线性变换的性质</li>
+<li>线性变换的表示方式</li>
+<li>对于向量的线性变换运算方式</li>
+</ol>
+<h4 id="复合变换">复合变换</h4>
+<p>复合变换就是线性变换的组合，例如我们有两个线性变换 <span
+class="math inline">\(f, g\)</span>，则它们的复合就是</p>
+<p><span class="math display">\[
+f(g(\vec{v}))
+\]</span></p>
+<p>复合变换的结果仍然是一个等价的变换，还是上面那个例子，对一个向量做 g,
+f 变换以后，可以等价为对这个向量做 h 变换</p>
+<p><span class="math display">\[
+h(\vec{v}) = f(g(\vec{v}))
+\]</span></p>
+<p>例如下面这两张图中，一个是先后进行了两次变换，另一个是只进行了一次变换，但是它们的结果是相同的</p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/rotateThenScale.gif" srcset="/img/loading.gif" lazyload /></p>
+<center>
+先是旋转，再进行缩放
+</center>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/rotateAndScale.gif" srcset="/img/loading.gif" lazyload /></p>
+<center>
+一次复合变换
+</center>
+<p>那么，我们有办法计算多个线性变换复合后的等价线性变换吗？答案当然是有的</p>
+<p>假定我们有以下两个线性变换：</p>
+<p><span class="math display">\[
+\begin{align}
+f &amp;=
+\begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\\\\
+g &amp;=
+\begin{bmatrix}
+\cos(\frac{\pi}{3}) &amp;&amp; sin(\frac{\pi}{3}) \\
+-\sin(\frac{\pi}{3}) &amp;&amp; cos(\frac{\pi}{3})
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>容易看出来 f 将向量缩放为原来的两倍，g 为顺时针旋转
+60°，当我们对一个向量执行 <span
+class="math inline">\(f(g(\vec{v}))\)</span>
+的操作时，其等价的线性变换是什么？</p>
+<p>其实我们直接利用矩阵的乘法，将两个矩阵相乘就可以得到结果</p>
+<p><span class="math display">\[
+\begin{align}
+h &amp;=
+\begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+\cos(\frac{\pi}{3}) &amp;&amp; sin(\frac{\pi}{3}) \\
+-\sin(\frac{\pi}{3}) &amp;&amp; cos(\frac{\pi}{3})
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+\begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+\frac{1}{2}  \\
+-\frac{\sqrt{3}}{2}
+\end{bmatrix}
+&amp;&amp;
+\begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+\frac{\sqrt{3}}{2} \\
+\frac{1}{2}
+\end{bmatrix}
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+1 &amp;&amp; \sqrt{3}\\
+-\sqrt{3} &amp;&amp; 1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>这里具体的公式不重要，重要的是我们怎么理解这个公式，或者说这个公式为什么逻辑上讲得通，我们对这个运算过程进行一个抽象</p>
+<p>在经过 g 变换以后，原来的 <span class="math inline">\(\vec{i}
+\rightarrow \vec{i&#39;}\)</span>，<span class="math inline">\(\vec{j}
+\rightarrow \vec{j&#39;}\)</span></p>
+<p><span class="math display">\[
+\begin{align}
+g = \begin{bmatrix}
+\vec{i&#39;} &amp;&amp; \vec{j&#39;}
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>那么我们再次进行 f 变换，就相当于对 g
+变换后的基向量进行了再一次变换，即 <span
+class="math inline">\(\vec{i&#39;} \rightarrow
+\vec{i&#39;&#39;}\)</span>，<span class="math inline">\(\vec{j&#39;}
+\rightarrow \vec{j&#39;&#39;}\)</span>，得到的 <span
+class="math inline">\(\vec{i&#39;&#39;}, \vec{j&#39;&#39;}\)</span>
+就是我们最终变换后的结果</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{i&#39;&#39;} &amp;= \begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+\frac{1}{2}  \\
+-\frac{\sqrt{3}}{2}
+\end{bmatrix}
+\\
+\vec{j&#39;&#39;} &amp;= \begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\begin{bmatrix}
+\frac{\sqrt{3}}{2} \\
+\frac{1}{2}
+\end{bmatrix}
+\\
+h &amp;= \begin{bmatrix}
+1 &amp;&amp; \sqrt{3}\\
+-\sqrt{3} &amp;&amp; 1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<h4 id="逆变换">逆变换</h4>
+<p>理解了上面的复合变换，逆变换就很好理解了，逆变换就是一个线性变换的逆。当我们先进行了一次线性变换以后，再进行另一次线性变换以后，如果向量和进行线性变换之前相同，那么就说这两次线性变换互逆</p>
+<p>例如对于下面的线性变换</p>
+<p><span class="math display">\[
+A = \begin{bmatrix}
+2 &amp;&amp; 0 \\
+0 &amp;&amp; 2
+\end{bmatrix}
+\]</span></p>
+<p>我们很容易想到它的逆为</p>
+<p><span class="math display">\[
+A^{-1} = \begin{bmatrix}
+\frac{1}{2} &amp;&amp; 0 \\
+0 &amp;&amp; \frac{1}{2}
+\end{bmatrix}
+\]</span></p>
+<p>我们将这两次线性变换进行组合，得到的结果为</p>
+<p><span class="math display">\[
+AA^{-1} = \begin{bmatrix}
+1 &amp;&amp; 0 \\
+0 &amp;&amp; 1
+\end{bmatrix}
+\]</span></p>
+<p>这个结果就是 <em>identity matrix</em>，即不发生任何变换的线性变换</p>
+<p>我们也可以用以下的公式计算出一个矩阵的逆</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+a &amp;&amp; b \\
+c &amp;&amp; d
+\end{bmatrix}
+^{-1}
+=
+\frac{1}{ad-bc}
+\begin{bmatrix}
+d &amp;&amp; -b \\
+-c &amp;&amp; a
+\end{bmatrix}
+\]</span></p>
+<h4 id="坐标系的相互转换">坐标系的相互转换</h4>
+<p>上面我们说的基向量的选择是根据我们在笛卡尔坐标系下的约定俗成的基向量，但是我们完全也可以不选择
+<span class="math inline">\(\hat{i}\)</span> 和 <span
+class="math inline">\(\hat{j}\)</span>
+作为基向量，而是在空间中另外选择任意两个线性不相关的向量 <span
+class="math inline">\(\hat{u}\)</span>, <span
+class="math inline">\(\hat{v}\)</span>
+作为基向量，其他向量由这两个向量的线性组合得到</p>
+<p>我们假定这两个基向量的值为</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{u} =
+\begin{bmatrix}
+0.6 \\
+0.4
+\end{bmatrix}
+\\
+\vec{v} =
+\begin{bmatrix}
+0.4 \\
+-1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>从下面的图里我们可以看到这两组基向量在笛卡尔坐标系下的展示</p>
+<p><img
+src="https://floribunda-1303001230.cos.ap-nanjing.myqcloud.com/20220518224927.png" srcset="/img/loading.gif" lazyload /></p>
+<p>既然可以使用不同的基向量去表示某一向量，那么问题来了，对于空间中的同一个向量，我们怎么从一个坐标系表示转换到另一个坐标系表示?</p>
+<p>例如上图中的 <span
+class="math inline">\(\vec{a}\)</span>，我们可以用两种方式表示它</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{a} &amp;= \vec{u} + \vec{v}
+\\
+\vec{a} &amp;=
+\begin{bmatrix}
+1 \\
+1
+\end{bmatrix}
+\\\\
+or \space \space \vec{a} &amp;= \vec{i} + (-0.6) \vec{j}
+\\
+\vec{a} &amp;= \begin{bmatrix}
+1 \\
+-0.6
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>但是到底怎么算出来呢？</p>
+<p>其实按照我自己的经验来看，要理解坐标系转换这件事还挺反直觉的，就像十进制和二进制之间的转换一样，我们早已习惯了在十进制下的运算，所以二进制转十进制比较方便，但是一旦反过来，我们就比较难理解其原理，或者换种说法就是很难掰过来自己的惯性思维
+🤣</p>
+<p>这里提供一个简单的思路，我们先去理解
+<strong>如何将非标准坐标系下的向量表示转换为标准坐标系下的向量表示</strong></p>
+<p>要解决这个问题，我们只需要知道非标准坐标系下的 <span
+class="math inline">\(\hat{u}\)</span> 和 <span
+class="math inline">\(\hat{v}\)</span>
+向量在标准坐标系下的表示是什么即可，例如对于上面的 <span
+class="math inline">\(\vec{a}\)</span>，我们知道它在非标准坐标系下的表示为
+<span class="math inline">\({1\brack
+1}\)</span>，那么我们就可以将其转化为:</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{a}
+&amp;= 1\vec{u} + 1\vec{v}
+\\\\
+&amp;= 1 \begin{bmatrix}
+0.6 \\
+0.4
+\end{bmatrix}
++
+1 \begin{bmatrix}
+0.4 \\
+-1
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+0.6 + 0.4 \\
+0.4 - 1
+\end{bmatrix}
+\\\\
+&amp;=
+\begin{bmatrix}
+1 \\
+-0.6
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>这个很好理解，因为就是将非标准坐标系下的基准向量理解为笛卡尔坐标系下的一组普通向量，然后得到这组向量的对应线性组合就行</p>
+<p>我们也可以将上述的过程表示为</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{a}
+&amp;= \begin{bmatrix}
+0.6 &amp;&amp; 0.4\\
+0.4 &amp;&amp; -1
+\end{bmatrix}
+\begin{bmatrix}
+1 \\
+1
+\end{bmatrix}
+\\\\
+&amp;= \begin{bmatrix}
+1 \\
+-0.6
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>这里的核心就是两个坐标系的基准向量之间的相互转换，从非标准到标准的转换就是把
+<span class="math inline">\(\vec{u}\)</span> 和 <span
+class="math inline">\(\vec{v}\)</span> 为 <span
+class="math inline">\(\vec{i}\)</span> 和 <span
+class="math inline">\(\vec{j}\)</span> 表示</p>
+<p>反过来也成立，从标准坐标系到非标准坐标系就是将 <span
+class="math inline">\(\vec{i}\)</span> 和 <span
+class="math inline">\(\vec{j}\)</span> 转为 <span
+class="math inline">\(\vec{u}\)</span> 和 <span
+class="math inline">\(\vec{v}\)</span>，那么我们就可以得到 <span
+class="math inline">\(\vec{a}\)</span> 在非标准坐标系下的表示为</p>
+<p><span class="math display">\[
+\begin{align}
+\vec{a} &amp;=
+\begin{bmatrix}
+0.6 &amp;&amp; 0.4 \\
+0.4 &amp;&amp; 1
+\end{bmatrix}
+^{-1}
+\begin{bmatrix}
+1 \\
+-0.6
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 \\
+1
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>这样我们就可以得到一个公式，假设标准坐标系 <span
+class="math inline">\(s\)</span> 到非标准坐标系 <span
+class="math inline">\(n\)</span> 的线性变换为 <span
+class="math inline">\(A\)</span>，那么：</p>
+<ul>
+<li>非标准 -&gt; 标准 <span class="math display">\[
+\begin{align}
+\vec{v} = A\begin{bmatrix}
+x_{n} \\
+y_{n}
+\end{bmatrix}
+\end{align}
+\]</span></li>
+<li>标准 -&gt; 非标准</li>
+</ul>
+<p><span class="math display">\[
+\begin{align}
+\vec{v} = A^{-1}\begin{bmatrix}
+x_{s} \\
+y_{s}
+\end{bmatrix}
+\end{align}
+\]</span></p>
+<p>到这里线性代数的基本知识就告一段落了，里面还有很多内容本篇没涉及到，例如<strong>行列式(determinant)</strong>，<strong>特征值(eigenvalue)，特征向量(eigenvector)</strong>,
+<strong>向量内积外积</strong>，<strong>线性方程组</strong>
+等，这些都是线代中的很重要的概念，但是由于篇幅原因，以及我们具体的使用场景限制，关于线性代数的内容就介绍到这里，读者如果想深入理解变换请务必<em>严肃学习！</em></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Dive-into-Transformation/" class="category-chain-item">Dive into Transformation</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E5%AD%A6/">#数学</a>
+      
+        <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">#图形学</a>
+      
+        <a href="/tags/%E5%89%8D%E7%AB%AF/">#前端</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Dive into Transformation（一）</div>
+      <div>https://floribunda1.github.io/2022/05/09/dive into transformation(1)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>acnoo</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月9日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/19/%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/" title="一个新的开始">
+                        <span class="hidden-mobile">一个新的开始</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+  });
+</script>
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
